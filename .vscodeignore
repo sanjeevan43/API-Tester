@@ -1,0 +1,8 @@
+﻿cli/
+demo-api/
+src/
+tsconfig.json
+.git/
+.github/
+.vscode/
+

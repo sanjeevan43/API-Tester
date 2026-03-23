@@ -1,0 +1,65 @@
+{
+  "name": "api-sentinel-vsc",
+  "displayName": "API Sentinel — Automated API Testing",
+  "description": "Automatically detect, generate, execute, and display API tests inside VS Code.",
+  "version": "1.1.0",
+  "publisher": "sanjeevan43",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Testing", "Debuggers", "Other"],
+  "keywords": ["api", "testing", "rest", "http", "express", "django", "flask", "vapor"],
+  "icon": "media/icon.png",
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "apiSentinel.runAll",
+        "title": "API Sentinel: Run All Tests",
+        "icon": "$(play)"
+      },
+      {
+        "command": "apiSentinel.scanProject",
+        "title": "API Sentinel: Scan Project for Endpoints",
+        "icon": "$(search)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "apiSentinel",
+          "title": "API Sentinel",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "apiSentinel": [
+        {
+          "id": "apiSentinel.endpointTree",
+          "name": "Endpoints",
+          "icon": "media/icon.png"
+        }
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanjeevan43/API-Tester"
+  },
+  "license": "MIT",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "uuid": "^9.0.1",
+    "glob": "^10.3.10"
+  }
+}
