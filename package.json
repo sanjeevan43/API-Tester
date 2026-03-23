@@ -2,7 +2,7 @@
   "name": "api-sentinel-vsc",
   "displayName": "API Sentinel — Automated API Testing",
   "description": "Automatically detect, generate, execute, and display API tests inside VS Code.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "sanjeevan43",
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Testing", "Debuggers", "Other"],
