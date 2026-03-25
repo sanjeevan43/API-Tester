@@ -41,7 +41,16 @@ export class Scanner {
       endpoints.push(...this.scanFile(file));
     }
 
-    return this.deduplicate(endpoints);
+    // Force single framework detection if multiple exist
+    let deduped = this.deduplicate(endpoints);
+    if (deduped.length > 0) {
+      const topFramework = deduped.map(e => e.framework).sort((a,b) =>
+        deduped.filter(v => v.framework === a).length - deduped.filter(v => v.framework === b).length
+      ).pop() || deduped[0].framework;
+      deduped = deduped.filter(e => e.framework === topFramework);
+    }
+
+    return deduped;
   }
 
   scanFile(filePath: string): Endpoint[] {
@@ -68,7 +77,7 @@ export class Scanner {
           id: uuidv4(),
           method,
           path: this.normalizePath(rawPath, pattern.framework),
-          url: `${this.config.baseURL}${this.normalizePath(rawPath, pattern.framework)}`,
+          url: this.normalizePath(rawPath, pattern.framework),
           framework: pattern.framework,
           params: this.extractPathParams(rawPath),
           query: this.extractQueryParams(context),
@@ -91,13 +100,15 @@ export class Scanner {
     if (framework === 'flask' || framework === 'fastapi') {
       p = p.replace(/<(?:\w+:)?(\w+)>/g, ':$1'); // <int:id> -> :id
     }
+    p = p.replace(/\{(\w+)\}/g, ':$1'); // {id} -> :id
     if (!p.startsWith('/')) p = '/' + p;
     return p;
   }
 
   private extractPathParams(path: string): string[] {
-    const matches = path.matchAll(/:(\w+)/g);
-    return Array.from(matches).map(m => m[1]);
+    const matches = path.matchAll(/[:{<](\w+)[}>]?/g);
+    const results = Array.from(matches).map(m => m[1]);
+    return results.filter(p => !['int', 'str', 'float', 'uuid'].includes(p)); // filter out typing from python routes
   }
 
   private extractQueryParams(context: string): string[] {

@@ -67,7 +67,13 @@ class Scanner {
         for (const file of files) {
             endpoints.push(...this.scanFile(file));
         }
-        return this.deduplicate(endpoints);
+        // Force single framework detection if multiple exist
+        let deduped = this.deduplicate(endpoints);
+        if (deduped.length > 0) {
+            const topFramework = deduped.map(e => e.framework).sort((a, b) => deduped.filter(v => v.framework === a).length - deduped.filter(v => v.framework === b).length).pop() || deduped[0].framework;
+            deduped = deduped.filter(e => e.framework === topFramework);
+        }
+        return deduped;
     }
     scanFile(filePath) {
         const content = fs.readFileSync(filePath, 'utf8');
@@ -90,7 +96,7 @@ class Scanner {
                     id: (0, uuid_1.v4)(),
                     method,
                     path: this.normalizePath(rawPath, pattern.framework),
-                    url: `${this.config.baseURL}${this.normalizePath(rawPath, pattern.framework)}`,
+                    url: this.normalizePath(rawPath, pattern.framework),
                     framework: pattern.framework,
                     params: this.extractPathParams(rawPath),
                     query: this.extractQueryParams(context),
@@ -111,13 +117,15 @@ class Scanner {
         if (framework === 'flask' || framework === 'fastapi') {
             p = p.replace(/<(?:\w+:)?(\w+)>/g, ':$1'); // <int:id> -> :id
         }
+        p = p.replace(/\{(\w+)\}/g, ':$1'); // {id} -> :id
         if (!p.startsWith('/'))
             p = '/' + p;
         return p;
     }
     extractPathParams(path) {
-        const matches = path.matchAll(/:(\w+)/g);
-        return Array.from(matches).map(m => m[1]);
+        const matches = path.matchAll(/[:{<](\w+)[}>]?/g);
+        const results = Array.from(matches).map(m => m[1]);
+        return results.filter(p => !['int', 'str', 'float', 'uuid'].includes(p)); // filter out typing from python routes
     }
     extractQueryParams(context) {
         const matches = context.matchAll(/req\.query\.(\w+)|request\.args\.get\s*\(\s*['"](\w+)['"]/g);

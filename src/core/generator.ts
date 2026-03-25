@@ -28,8 +28,16 @@ export class Generator {
   }
 
   private createValid(ep: Endpoint): TestCase {
-    const body: any = {};
-    ep.bodyFields.forEach(f => body[f] = this.exampleFor(f));
+    let body: any = {};
+    if (ep.method === 'POST' || ep.method === 'PUT' || ep.method === 'PATCH') {
+      if (ep.bodyFields.length === 0) {
+        body = { "test": "data" };
+      } else {
+        ep.bodyFields.forEach(f => body[f] = this.exampleFor(f));
+      }
+    } else {
+      body = undefined;
+    }
 
     return {
       id: uuidv4(),
@@ -38,7 +46,7 @@ export class Generator {
       method: ep.method,
       url: this.interpolate(ep.url, ep.params),
       headers: this.getHeaders(ep),
-      body: ep.method !== 'GET' ? body : undefined,
+      body,
       expectedStatus: ep.method === 'POST' ? 201 : 200
     };
   }
@@ -73,15 +81,26 @@ export class Generator {
 
   private getHeaders(ep: Endpoint): Record<string, string> {
     const h: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (ep.requiresAuth && this.config.authToken) {
-      h['Authorization'] = `Bearer ${this.config.authToken}`;
+    if (ep.requiresAuth) {
+      if (this.config.authToken) {
+        h['Authorization'] = `Bearer ${this.config.authToken}`;
+      } else {
+        h['Authorization'] = `Bearer test_token`;
+      }
     }
     return h;
   }
 
   private interpolate(url: string, params: string[]): string {
     let u = url;
-    params.forEach(p => u = u.replace(`:${p}`, '1')); // Default to 1 for IDs
+    params.forEach(p => {
+      u = u.replace(`:${p}`, '1');
+      u = u.replace(`{${p}}`, '1');
+      u = u.replace(`<${p}>`, '1');
+    });
+    // In case no params were extracted but it's still generic
+    u = u.replace(/:[a-zA-Z0-9_]+/g, '1');
+    u = u.replace(/\{[a-zA-Z0-9_]+\}/g, '1');
     return u;
   }
 

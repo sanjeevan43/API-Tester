@@ -5,9 +5,9 @@ import { Config } from './types';
 export function loadConfig(cwd: string): Config {
   const configPath = path.join(cwd, 'api.config.json');
   const defaults: Config = {
-    baseURL: 'http://localhost:3000',
+    baseURL: '',  // NO FALLBACKS
     authToken: '',
-    timeout: 5000,
+    timeout: 30000, // Default timeout is fine as it's a technical constraint, but URL is NOT
     include: ['**/*.js', '**/*.ts', '**/*.py', '**/*.swift', '**/*.go'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/.git/**']
   };
@@ -17,7 +17,7 @@ export function loadConfig(cwd: string): Config {
       const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       return { ...defaults, ...userConfig };
     } catch (e) {
-      console.warn('⚠️ Warning: Failed to parse api.config.json. Using defaults.');
+      // Fail silently for corrupted files, but don't inject defaults for specific user data
     }
   }
 

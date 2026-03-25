@@ -2,11 +2,26 @@
   "name": "api-sentinel-vsc",
   "displayName": "API Sentinel — Automated API Testing",
   "description": "Automatically detect, generate, execute, and display API tests inside VS Code.",
-  "version": "1.2.0",
+  "version": "3.2.0",
   "publisher": "sanjeevan43",
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Testing", "Debuggers", "Other"],
-  "keywords": ["api", "testing", "rest", "http", "express", "django", "flask", "vapor"],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Testing",
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "api",
+    "testing",
+    "rest",
+    "http",
+    "express",
+    "django",
+    "flask",
+    "vapor"
+  ],
   "icon": "media/icon.png",
   "main": "./out/extension.js",
   "contributes": {
@@ -22,6 +37,20 @@
         "icon": "$(search)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "apiSentinel.scanProject",
+          "when": "view == apiSentinel.endpointSidebar",
+          "group": "navigation@1"
+        },
+        {
+          "command": "apiSentinel.runAll",
+          "when": "view == apiSentinel.endpointSidebar",
+          "group": "navigation@2"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -34,11 +63,43 @@
     "views": {
       "apiSentinel": [
         {
-          "id": "apiSentinel.endpointTree",
-          "name": "Endpoints",
+          "type": "webview",
+          "id": "apiSentinel.endpointSidebar",
+          "name": "Sentinel Pro Dashboard",
+          "icon": "media/icon.png"
+        },
+        {
+          "type": "webview",
+          "id": "apiSentinel.settingsView",
+          "name": "Settings",
           "icon": "media/icon.png"
         }
       ]
+    },
+    "configuration": {
+      "title": "API Sentinel",
+      "properties": {
+        "apiSentinel.baseURL": {
+          "type": "string",
+          "default": "",
+          "description": "Base URL of the API server"
+        },
+        "apiSentinel.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Authorization token or API key"
+        },
+        "apiSentinel.timeout": {
+          "type": "number",
+          "default": 30000,
+          "description": "Request timeout in milliseconds"
+        },
+        "apiSentinel.retries": {
+          "type": "number",
+          "default": 0,
+          "description": "Number of times to retry failed requests"
+        }
+      }
     }
   },
   "repository": {
@@ -53,13 +114,14 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@types/vscode": "^1.85.0",
     "@types/uuid": "^9.0.7",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.27.4",
     "typescript": "^5.3.3"
   },
   "dependencies": {
     "axios": "^1.6.0",
-    "uuid": "^9.0.1",
-    "glob": "^10.3.10"
+    "glob": "^10.3.10",
+    "uuid": "^9.0.1"
   }
 }
